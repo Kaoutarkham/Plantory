@@ -1,0 +1,77 @@
+classDiagram
+    class User {
+        +int id
+        +string username
+        +string email
+        +string password
+        +string bio
+        +string avatar_url
+        +datetime createdAt
+        +register()
+        +login()
+        +getProfile()
+        +updateProfile()
+    }
+
+    class Post {
+        +int id
+        +int userId
+        +string image_url
+        +string caption
+        +datetime createdAt
+        +createPost()
+        +getAllPosts()
+        +getPostById()
+        +deletePost()
+    }
+
+    class Comment {
+        +int id
+        +int postId
+        +int userId
+        +string content
+        +datetime createdAt
+        +addComment()
+        +deleteComment()
+        +getCommentsByPost()
+    }
+
+    class Like {
+        +int userId
+        +int postId
+        +datetime createdAt
+        +toggleLike()
+    }
+
+    class Follow {
+        +int followerId
+        +int followingId
+        +datetime createdAt
+        +followUser()
+        +unfollowUser()
+    }
+
+    %% Relationships
+    
+    %% Composition: Posts cannot exist without a User (Owner)
+    User "1" *-- "0..*" Post : creates
+
+    %% Composition: Comments belong to a specific Post and User
+    Post "1" *-- "0..*" Comment : contains
+    User "1" -- "0..*" Comment : writes
+
+    %% Association: Likes link Users and Posts
+    User "1" -- "0..*" Like : performs
+    Post "1" -- "0..*" Like : receives
+
+    %% Aggregation: Follows are relationships between Users
+    User "1" o-- "0..*" Follow : follower
+    User "1" o-- "0..*" Follow : following
+
+
+
+
+
+
+
+
