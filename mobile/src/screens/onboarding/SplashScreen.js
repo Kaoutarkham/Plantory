@@ -7,6 +7,7 @@ export default function SplashScreen({ navigation }) {
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // Run the animations//
     Animated.parallel([
       Animated.timing(scaleAnim, {
         toValue: 1,
@@ -20,18 +21,17 @@ export default function SplashScreen({ navigation }) {
       }),
     ]).start();
 
-    /**const timer = setTimeout(() => {
-      navigation.replace("Welcome");
+    // Navigate to Onboarding after the animation finishes
+    const timer = setTimeout(() => {
+      // Make sure "Onboarding" matches the name in your AppNavigator.js
+      navigation.replace("OnboardingOne");
     }, 2500);
 
-    return () => clearTimeout(timer);**/
-  }, []);
+    return () => clearTimeout(timer);
+  }, [navigation]);
 
   return (
-    <LinearGradient
-      colors={["#ffffff", "#9cd6aa"]} // white → existing green
-      style={styles.container}
-    >
+    <LinearGradient colors={["#ffffff", "#9cd6aa"]} style={styles.container}>
       <Animated.Image
         source={require("../../../assets/logo.png")}
         style={[
