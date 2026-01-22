@@ -45,7 +45,10 @@ export default function OnboardingThree({ navigation }) {
             {/* 3. Continue Button */}
             <TouchableOpacity
               style={styles.button}
-              onPress={() => console.log("CLICK")}
+              onPress={() => {console.log("CLICK");
+                navigation.replace("loginScreen");
+              }}
+
             >
               <Text style={styles.buttonText}>Continue</Text>
             </TouchableOpacity>

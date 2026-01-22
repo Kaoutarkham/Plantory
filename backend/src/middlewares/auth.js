@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 
 const auth = (req, res, next) => {
-  // Get token from header (usually looks like: Bearer <token>)
   const authHeader = req.header("Authorization");
   const token = authHeader && authHeader.split(" ")[1];
 
@@ -10,11 +9,12 @@ const auth = (req, res, next) => {
   }
 
   try {
-    // Verify token using the secret from your .env file
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
 
-    // Add the user ID to the request object so controllers can use it
+    // This makes it easy to use in your plant controller
+    req.userId = decoded.id;
     req.user = decoded;
+
     next();
   } catch (err) {
     res.status(401).json({ message: "Token is not valid" });

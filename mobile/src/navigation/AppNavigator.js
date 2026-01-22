@@ -6,6 +6,11 @@ import SplashScreen from "../screens/onboarding/SplashScreen";
 import OnboardingOne from "../screens/onboarding/OnboardingOne";
 import OnboardingTwo from "../screens/onboarding/OnboardingTwo";
 import OnboardingThree from "../screens/onboarding/OnboardingThree";
+import LoginScreen from "../screens/auth/LoginScreen";
+import RegisterScreen from "../screens/auth/RegisterScreen";
+
+// REMOVE OR COMMENT THIS LINE UNTIL YOU CREATE THE FILE
+// import ProfileScreen from "../screens/profile/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -13,13 +18,16 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* FIRST SCREEN: The app starts here */}
         <Stack.Screen name="Splash" component={SplashScreen} />
-
-        {/* OTHER SCREENS */}
         <Stack.Screen name="OnboardingOne" component={OnboardingOne} />
         <Stack.Screen name="OnboardingTwo" component={OnboardingTwo} />
         <Stack.Screen name="OnboardingThree" component={OnboardingThree} />
+
+        <Stack.Screen name="loginScreen" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
+
+        {/* REMOVE THIS UNTIL YOU HAVE THE PROFILE FILE READY */}
+        {/* <Stack.Screen name="Profile" component={ProfileScreen} /> */}
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -1,1 +1,51 @@
+services:
+  
+  api:
+    container_name: plantory_api
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: plantory_user
+      DB_PASSWORD: plantory_password
+      DB_NAME: plantory_db
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
 
+  # --- Database ---
+  db:
+    container_name: plantory_db
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: plantory_user
+      POSTGRES_PASSWORD: plantory_password
+      POSTGRES_DB: plantory_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # --- Cache ---
+  redis:
+    container_name: plantory_redis
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

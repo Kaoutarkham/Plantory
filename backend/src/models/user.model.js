@@ -1,8 +1,7 @@
-// 1. IMPORT the sequelize instance and DataTypes
 const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+// CHANGE THIS LINE: Add { } around sequelize
+const { sequelize } = require("../config/database"); 
 
-// 2. DEFINE the Model
 const User = sequelize.define(
   "User",
   {
@@ -21,22 +20,25 @@ const User = sequelize.define(
       allowNull: false,
     },
     gender: {
-      type: DataTypes.STRING, // Matches your Register Screen
+      type: DataTypes.STRING,
       allowNull: true,
     },
     birthday: {
-      type: DataTypes.DATEONLY, // Matches your Register Screen
+      type: DataTypes.DATEONLY,
       allowNull: true,
     },
     profilePicture: {
-      type: DataTypes.STRING, // For the camera icon on your screen
+      type: DataTypes.STRING,
       allowNull: true,
     },
   },
   {
-    timestamps: true, // Adds createdAt and updatedAt automatically
-  }
+    timestamps: true,
+  },
 );
 
-// 3. EXPORT the Model
+User.associate = (models) => {
+  User.hasMany(models.Plant, { foreignKey: "userId", as: "plants" });
+};
+
 module.exports = User;
