@@ -4,7 +4,7 @@
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.png", 
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
@@ -13,13 +13,22 @@
       "backgroundColor": "#071A07"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Plantory a besoin d'accéder à votre caméra pour votre photo de profil.",
+        "NSPhotoLibraryUsageDescription": "Plantory a besoin d'accéder à vos photos pour personnaliser votre profil."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#071A07"
       },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
       "edgeToEdgeEnabled": true
     },
     "web": {
@@ -27,7 +36,14 @@
     },
     "plugins": [
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "L'application a besoin d'accéder à vos photos.",
+          "cameraPermission": "L'application a besoin d'accéder à votre appareil photo."
+        }
+      ]
     ]
   }
 }
