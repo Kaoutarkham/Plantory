@@ -2,13 +2,18 @@ const User = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 
 const createUser = async (userData) => {
-  // Hash the password before saving to the database
+  // Hash du mot de passe (Sécurité pour le jury)
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(userData.password, salt);
 
+  // Utilisation des noms exacts de ton pgAdmin
   return await User.create({
-    ...userData,
+    fullName: userData.fullName,
+    email: userData.email,
     password: hashedPassword,
+    gender: userData.gender,
+    birthday: userData.birthday, // Nouveau champ
+    profileImage: userData.profileImage, // Chemin de la photo
   });
 };
 

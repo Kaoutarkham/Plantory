@@ -1,6 +1,5 @@
 const { DataTypes } = require("sequelize");
-// CHANGE THIS LINE: Add { } around sequelize
-const { sequelize } = require("../config/database"); 
+const { sequelize } = require("../config/database");
 
 const User = sequelize.define(
   "User",
@@ -24,19 +23,22 @@ const User = sequelize.define(
       allowNull: true,
     },
     birthday: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DATEONLY, // Format YYYY-MM-DD
       allowNull: true,
     },
-    profilePicture: {
+    // Nom identique à ta colonne dans pgAdmin
+    profileImage: {
       type: DataTypes.STRING,
       allowNull: true,
     },
   },
   {
+    tableName: "Users", // Important pour matcher ton pgAdmin
     timestamps: true,
   },
 );
 
+// Relation avec les plantes pour ton écran profil
 User.associate = (models) => {
   User.hasMany(models.Plant, { foreignKey: "userId", as: "plants" });
 };

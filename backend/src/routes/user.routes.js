@@ -2,23 +2,19 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/user.controller");
 const upload = require("../middlewares/multer");
-const auth = require("../middlewares/auth"); // 1. Added your security guard
+const auth = require("../middlewares/auth");
 
-// --- PUBLIC ROUTES ---
-
-// Register with profile picture upload
+// Vérifie que userController.register existe bien !
 router.post(
   "/register",
-  upload.single("profilePicture"),
+  upload.single("profileImage"),
   userController.register,
 );
 
-// Login to get the JWT Token
 router.post("/login", userController.login);
 
-// --- PRIVATE ROUTES ---
-
-// Get User Profile + Plant Grid (Requires Token)
-router.get("/profile", auth, userController.getProfile); // 2. Added the profile route
+// Vérifie que le nom 'getProfile' est identique dans le contrôleur
+router.get("/profile/:id", userController.getProfile);
+router.get("/profile", auth, userController.getProfile);
 
 module.exports = router;
