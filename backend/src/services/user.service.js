@@ -12,8 +12,8 @@ const createUser = async (userData) => {
     email: userData.email,
     password: hashedPassword,
     gender: userData.gender,
-    birthday: userData.birthday, // Nouveau champ
-    profileImage: userData.profileImage, // Chemin de la photo
+    birthday: userData.birthday, 
+    profileImage: userData.profileImage, 
   });
 };
 
