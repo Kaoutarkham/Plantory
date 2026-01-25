@@ -1,16 +1,16 @@
-const { sequelize } = require("../config/database");
-
-const Plant = sequelize.models.Plant;
+const plantService = require("../services/plant.service");
+const path = require("path"); 
 
 exports.addPlant = async (req, res) => {
   try {
     const { name } = req.body;
-    const image = req.file ? req.file.path : null;
 
-    // req.userId comes from your auth middleware (protect route)
-    const newPlant = await Plant.create({
+    
+    const imageFilename = req.file ? req.file.filename : null;
+
+    const newPlant = await plantService.createPlant({
       name,
-      image,
+      image: imageFilename,
       userId: req.userId,
     });
 
@@ -25,13 +25,24 @@ exports.addPlant = async (req, res) => {
   }
 };
 
-
 exports.getUserPlants = async (req, res) => {
   try {
-    const plants = await Plant.findAll({
-      where: { userId: req.userId },
+    const plants = await plantService.findPlantsByUserId(req.userId);
+
+    const protocol = req.protocol;
+    const host = req.get("host");
+    const baseUrl = `${protocol}://${host}/uploads`; 
+
+    const formattedPlants = plants.map((plant) => {
+      const p = plant.toJSON();
+      if (p.image) {
+        const filename = path.basename(p.image);
+        p.image = `${baseUrl}/${filename}`;
+      }
+      return p;
     });
-    res.status(200).json(plants);
+
+    res.status(200).json(formattedPlants);
   } catch (error) {
     res
       .status(500)
