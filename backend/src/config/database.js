@@ -1,28 +1,26 @@
 const { Sequelize } = require("sequelize");
+require("dotenv").config();
 
-const sequelize = new Sequelize("Plantory_db", "postgres", "kham", {
-  host: "127.0.0.1",
-  port: 5432,
-  dialect: "postgres",
-  logging: false, // Set to console.log if you want to see SQL queries in terminal
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000,
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  String(process.env.DB_PASSWORD), 
+  {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT || 5432,
+    dialect: "postgres",
+    logging: false,
   },
-});
+);
 
-// Added this function to fix the "connectDB is not a function" error
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log("✅ PostgreSQL Connected successfully!");
-  } catch (error) {
-    console.error("❌ Unable to connect to the database:", error);
+    console.log("✅ PostgreSQL Connected...");
+  } catch (err) {
+    console.error("❌ Database Connection Error:", err.message);
     process.exit(1);
   }
 };
 
-// EXPORT BOTH: This allows index.js to use both sequelize and connectDB
 module.exports = { sequelize, connectDB };

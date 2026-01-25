@@ -1,20 +1,27 @@
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 
-// 1. Configure where and how to save the file
+const uploadPath = path.join(__dirname, "../../uploads");
+
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // This saves files to the 'uploads' folder in your main 'backend' directory
-    cb(null, path.join(__dirname, "../../uploads"));
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    // This gives the file a unique name: timestamp-originalName.jpg
-    cb(null, Date.now() + "-" + file.originalname);
+    const ext = path.extname(file.originalname);
+    const name = path.basename(file.originalname, ext).replace(/\s+/g, "");
+    cb(null, `${Date.now()}-${name}${ext}`);
   },
 });
 
-
-const upload = multer({ storage: storage });
-
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 module.exports = upload;
