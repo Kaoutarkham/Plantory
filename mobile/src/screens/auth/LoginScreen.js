@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "../../services/api";
 
 export default function LoginScreen({ navigation }) {
@@ -27,19 +28,23 @@ export default function LoginScreen({ navigation }) {
 
     setLoading(true);
     try {
-      /*  await api.post("/users/login", {
+      // 1. Send Login Request
+      const response = await api.post("/users/login", {
         email: email.trim(),
         password: password,
-      });*/
+      });
 
+      const { token, userId } = response.data;
+
+      // 2. Save Session Data to phone storage
+      await AsyncStorage.setItem("userToken", token);
+      await AsyncStorage.setItem("userId", userId.toString());
+
+      // 3. Success! Move to Profile
       navigation.replace("Profile");
     } catch (e) {
-      console.log("Login Error:", e.message);
-
-      Alert.alert(
-        "Login Failed",
-        "Could not connect to the server. Please check your backend connection.",
-      );
+      const msg = e.response?.data?.message || "Connection error";
+      Alert.alert("Login Failed", msg);
     } finally {
       setLoading(false);
     }
@@ -47,21 +52,16 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
       <ImageBackground
         source={require("../../../assets/images/welcome.jpg")}
         style={styles.backgroundImage}
-        resizeMode="cover"
       >
         <View style={styles.overlay}>
           <SafeAreaView style={styles.contentContainer}>
-            {/* Header Section */}
             <View style={styles.headerSection}>
               <Text style={styles.headerTitle}>Welcome Back!</Text>
-              <Text style={styles.headerSubtitle}>Happy to see you again!</Text>
             </View>
 
-            {/* Form Section */}
             <View style={styles.formSection}>
               <Text style={styles.label}>Email</Text>
               <View style={styles.inputWrapper}>
@@ -72,12 +72,11 @@ export default function LoginScreen({ navigation }) {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter your email"
+                  placeholder="Email"
                   placeholderTextColor="#777"
                   value={email}
                   onChangeText={setEmail}
                   autoCapitalize="none"
-                  keyboardType="email-address"
                 />
               </View>
 
@@ -90,7 +89,7 @@ export default function LoginScreen({ navigation }) {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter your password"
+                  placeholder="Password"
                   placeholderTextColor="#777"
                   secureTextEntry
                   value={password}
@@ -98,11 +97,6 @@ export default function LoginScreen({ navigation }) {
                 />
               </View>
 
-              <TouchableOpacity>
-                <Text style={styles.forgotText}>Forgot Password?</Text>
-              </TouchableOpacity>
-
-              {/* Login Button */}
               <TouchableOpacity
                 style={styles.loginButton}
                 onPress={handleLogin}
@@ -114,16 +108,6 @@ export default function LoginScreen({ navigation }) {
                   <Text style={styles.loginButtonText}>Login</Text>
                 )}
               </TouchableOpacity>
-
-              {/* Footer / Register Link */}
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>Don't have an account? </Text>
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("Register")}
-                >
-                  <Text style={styles.createOneText}>Create one</Text>
-                </TouchableOpacity>
-              </View>
             </View>
           </SafeAreaView>
         </View>
@@ -131,7 +115,6 @@ export default function LoginScreen({ navigation }) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#000" },
   backgroundImage: { flex: 1, width: "100%" },

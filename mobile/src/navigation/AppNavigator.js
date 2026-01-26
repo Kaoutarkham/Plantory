@@ -1,9 +1,8 @@
 import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 
-// --- SCREEN IMPORTS (Fixed Spelling) ---
 import SplashScreen from "../screens/onboarding/SplashScreen";
 import OnboardingOne from "../screens/onboarding/OnboardingOne";
 import OnboardingTwo from "../screens/onboarding/OnboardingTwo";
@@ -11,15 +10,16 @@ import OnboardingThree from "../screens/onboarding/OnboardingThree";
 import LoginScreen from "../screens/auth/LoginScreen";
 import RegisterScreen from "../screens/auth/RegisterScreen";
 import HomeScreen from "../screens/home/HomeScreen";
-import ProfileScreen from "../screens/home/ProfileScreen"; // Added the 'e'
+import ProfileScreen from "../screens/home/ProfileScreen";
+import PostDetailScreen from "../screens/home/PostDetailScreen";
 
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function MainTabs() {
   return (
     <Tab.Navigator
-      initialRouteName="Profile"
+      initialRouteName="Home"
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: "#4ADE80",
@@ -47,7 +47,7 @@ function MainTabs() {
         },
       })}
     >
-      {/*<Tab.Screen name="Home" component={HomeScreen} />*/}
+      <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Search" component={HomeScreen} />
       <Tab.Screen name="Add" component={HomeScreen} />
       <Tab.Screen name="Activity" component={HomeScreen} />
@@ -60,12 +60,25 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Splash" component={SplashScreen} />
+
       <Stack.Screen name="OnboardingOne" component={OnboardingOne} />
       <Stack.Screen name="OnboardingTwo" component={OnboardingTwo} />
       <Stack.Screen name="OnboardingThree" component={OnboardingThree} />
+
       <Stack.Screen name="loginScreen" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
+
+      <Stack.Screen name="MainApp" component={MainTabs} />
+
+      <Stack.Screen
+        name="PostDetail"
+        component={PostDetailScreen}
+        options={{
+          animation: "slide_from_right",
+          presentation: "card",
+        }}
+      />
     </Stack.Navigator>
   );
 }

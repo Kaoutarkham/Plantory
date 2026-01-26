@@ -69,10 +69,11 @@ export default function RegisterScreen({ navigation }) {
 
       // 2. SUCCESS: Go directly to MainApp (Tabs)
       // navigation.replace clears the stack so you can't go back to Register
-      navigation.replace("MainApp");
+      navigation.replace("MainApp"); 
+
     } catch (error) {
       console.log("Registration Error:", error.message);
-
+      
       // --- STEP 2: BYPASS ERROR FOR DESIGN TESTING ---
       // If backend is off, we still go to the Profile screen
       navigation.replace("MainApp");
@@ -93,41 +94,22 @@ export default function RegisterScreen({ navigation }) {
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <MaterialCommunityIcons
-              name="chevron-left"
-              size={30}
-              color="#fff"
-            />
+            <MaterialCommunityIcons name="chevron-left" size={30} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Create Account</Text>
           <View style={{ width: 30 }} />
         </View>
 
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <TouchableOpacity
-            style={styles.avatarSection}
-            onPress={pickImage}
-            activeOpacity={0.7}
-          >
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <TouchableOpacity style={styles.avatarSection} onPress={pickImage} activeOpacity={0.7}>
             <View style={styles.avatarPlaceholder}>
               {image ? (
                 <Image source={{ uri: image }} style={styles.avatarImage} />
               ) : (
-                <MaterialCommunityIcons
-                  name="account"
-                  size={60}
-                  color="#3a4a3a"
-                />
+                <MaterialCommunityIcons name="account" size={60} color="#3a4a3a" />
               )}
               <View style={styles.cameraBadge}>
-                <MaterialCommunityIcons
-                  name="camera-plus"
-                  size={16}
-                  color="#000"
-                />
+                <MaterialCommunityIcons name="camera-plus" size={16} color="#000" />
               </View>
             </View>
             <Text style={styles.avatarLabel}>Add a Profile Picture</Text>
@@ -135,90 +117,29 @@ export default function RegisterScreen({ navigation }) {
 
           <View style={styles.form}>
             <Text style={styles.label}>Full Name</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Full Name"
-              placeholderTextColor="#555"
-              value={fullName}
-              onChangeText={setFullName}
-            />
+            <TextInput style={styles.input} placeholder="Full Name" placeholderTextColor="#555" value={fullName} onChangeText={setFullName} />
 
             <Text style={styles.label}>Email Address</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor="#555"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
+            <TextInput style={styles.input} placeholder="Email" placeholderTextColor="#555" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
 
             <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor="#555"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
+            <TextInput style={styles.input} placeholder="Password" placeholderTextColor="#555" secureTextEntry value={password} onChangeText={setPassword} />
 
             <Text style={styles.label}>Gender</Text>
             <View style={styles.genderRow}>
-              <TouchableOpacity
-                style={[
-                  styles.genderBtn,
-                  gender === "Female" && styles.genderActive,
-                ]}
-                onPress={() => setGender("Female")}
-              >
-                <Text
-                  style={[
-                    styles.genderText,
-                    gender === "Female" && styles.textActive,
-                  ]}
-                >
-                  Female
-                </Text>
+              <TouchableOpacity style={[styles.genderBtn, gender === "Female" && styles.genderActive]} onPress={() => setGender("Female")}>
+                <Text style={[styles.genderText, gender === "Female" && styles.textActive]}>Female</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.genderBtn,
-                  gender === "Male" && styles.genderActive,
-                ]}
-                onPress={() => setGender("Male")}
-              >
-                <Text
-                  style={[
-                    styles.genderText,
-                    gender === "Male" && styles.textActive,
-                  ]}
-                >
-                  Male
-                </Text>
+              <TouchableOpacity style={[styles.genderBtn, gender === "Male" && styles.genderActive]} onPress={() => setGender("Male")}>
+                <Text style={[styles.genderText, gender === "Male" && styles.textActive]}>Male</Text>
               </TouchableOpacity>
             </View>
 
             <Text style={styles.label}>Birthday</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor="#555"
-              value={birthday}
-              onChangeText={setBirthday}
-            />
+            <TextInput style={styles.input} placeholder="YYYY-MM-DD" placeholderTextColor="#555" value={birthday} onChangeText={setBirthday} />
 
-            <TouchableOpacity
-              style={styles.primaryBtn}
-              onPress={handleRegister}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.primaryBtnText}>Complete Registration</Text>
-              )}
+            <TouchableOpacity style={styles.primaryBtn} onPress={handleRegister} disabled={loading}>
+              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryBtnText}>Complete Registration</Text>}
             </TouchableOpacity>
 
             <Text style={styles.footerNote}>
@@ -236,92 +157,24 @@ export default function RegisterScreen({ navigation }) {
 // ... styles remain the same ...
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#070f07" },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    height: 60,
-  },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, height: 60 },
   headerTitle: { color: "#fff", fontSize: 18, fontWeight: "bold" },
   scrollContent: { paddingHorizontal: 25, paddingBottom: 40 },
   avatarSection: { alignItems: "center", marginVertical: 20 },
-  avatarPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "#152015",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
-    borderWidth: 1,
-    borderColor: "#2a3a2a",
-  },
+  avatarPlaceholder: { width: 100, height: 100, borderRadius: 50, backgroundColor: "#152015", justifyContent: "center", alignItems: "center", position: "relative", borderWidth: 1, borderColor: "#2a3a2a" },
   avatarImage: { width: "100%", height: "100%", borderRadius: 50 },
-  cameraBadge: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#070f07",
-  },
-  avatarLabel: {
-    color: "#fff",
-    marginTop: 12,
-    fontSize: 16,
-    fontWeight: "600",
-  },
+  cameraBadge: { position: "absolute", bottom: 0, right: 0, backgroundColor: "#fff", width: 30, height: 30, borderRadius: 15, justifyContent: "center", alignItems: "center", borderWidth: 2, borderColor: "#070f07" },
+  avatarLabel: { color: "#fff", marginTop: 12, fontSize: 16, fontWeight: "600" },
   form: { width: "100%" },
-  label: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
-    marginBottom: 8,
-    marginTop: 15,
-  },
-  input: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "#2a3a2a",
-    borderRadius: 30,
-    height: 50,
-    paddingHorizontal: 20,
-    color: "#fff",
-  },
+  label: { color: "#fff", fontSize: 14, fontWeight: "bold", marginBottom: 8, marginTop: 15 },
+  input: { backgroundColor: "transparent", borderWidth: 1, borderColor: "#2a3a2a", borderRadius: 30, height: 50, paddingHorizontal: 20, color: "#fff" },
   genderRow: { flexDirection: "row", justifyContent: "space-between" },
-  genderBtn: {
-    flex: 0.48,
-    borderWidth: 1,
-    borderColor: "#2a3a2a",
-    borderRadius: 30,
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  genderBtn: { flex: 0.48, borderWidth: 1, borderColor: "#2a3a2a", borderRadius: 30, height: 50, justifyContent: "center", alignItems: "center" },
   genderActive: { borderColor: "#1b5e20", backgroundColor: "#0c2b0c" },
   genderText: { color: "#555", fontSize: 14 },
   textActive: { color: "#fff", fontWeight: "bold" },
-  primaryBtn: {
-    backgroundColor: "#1b5e20",
-    height: 55,
-    borderRadius: 30,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 30,
-  },
+  primaryBtn: { backgroundColor: "#1b5e20", height: 55, borderRadius: 30, justifyContent: "center", alignItems: "center", marginTop: 30 },
   primaryBtnText: { color: "#4cf551", fontSize: 16, fontWeight: "bold" },
-  footerNote: {
-    color: "#555",
-    fontSize: 11,
-    textAlign: "center",
-    marginTop: 25,
-    lineHeight: 18,
-  },
+  footerNote: { color: "#555", fontSize: 11, textAlign: "center", marginTop: 25, lineHeight: 18 },
   linkText: { color: "#fff", fontWeight: "bold" },
 });

@@ -4,24 +4,26 @@
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo1.png",
+    "icon": "./assets/favicon.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/welcome.jpg",
-      "resizeMode": "cover",
+      "image": "./assets/favicon.png",
+      "resizeMode": "contain",
       "backgroundColor": "#071A07"
     },
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.yourname.plantory",
       "infoPlist": {
         "NSCameraUsageDescription": "Plantory a besoin d'accéder à votre caméra pour votre photo de profil.",
         "NSPhotoLibraryUsageDescription": "Plantory a besoin d'accéder à vos photos pour personnaliser votre profil."
       }
     },
     "android": {
+      "package": "com.yourname.plantory",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo.png",
+        "foregroundImage": "./assets/favicon.png",
         "backgroundColor": "#071A07"
       },
       "permissions": [

@@ -42,7 +42,6 @@ export default function OnboardingThree({ navigation }) {
               </Text>
             </View>
 
-            {/* 3. Continue Button */}
             <TouchableOpacity
               style={styles.button}
               onPress={() => {console.log("CLICK");
