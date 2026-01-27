@@ -1,168 +1,228 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
   Image,
-  StyleSheet,
   ScrollView,
-  TouchableOpacity,
   TextInput,
-  SafeAreaView,
-  StatusBar,
+  TouchableOpacity,
+  StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { api, addLike, addComment } from "../../services/api"; // Import functions li qaddina
+import { usePostStore } from "../../stores/postStore";
 
 const PostDetailScreen = ({ route, navigation }) => {
-  // 1. Params li jaw mn l-Profile
-  const { plantId, imageUri } = route.params || {};
+  const { id } = route.params;
+  const {
+    currentPost,
+    comments,
+    loading,
+    fetchPostById,
+    fetchComments,
+    addComment,
+    toggleLike,
+    toggleSave,
+  } = usePostStore();
 
-  // 2. Local States
-  const [isLiked, setIsLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(129); // Start with fake number or from API
   const [commentText, setCommentText] = useState("");
-  const [comments, setComments] = useState([
-    {
-      id: "1",
-      username: "plant_nina",
-      text: "That's beauty! Looks so healthy.",
-      image: "https://via.placeholder.com/150",
-    },
-  ]);
+  const [submitting, setSubmitting] = useState(false);
+  const inputRef = useRef(null);
 
-  // 3. Logic: Toggle Like m3a l-Backend
-  const handleToggleLike = async () => {
-    try {
-      const newLikedStatus = !isLiked;
-      setIsLiked(newLikedStatus);
-      setLikesCount(newLikedStatus ? likesCount + 1 : likesCount - 1);
-      
-      await addLike(plantId); // API Call
-    } catch (err) {
-      console.error("Error liking:", err);
+  useEffect(() => {
+    if (id) {
+      fetchPostById(id);
+      fetchComments(id);
     }
-  };
+  }, [id]);
 
-  // 4. Logic: Add Comment m3a l-Backend
   const handleAddComment = async () => {
     if (!commentText.trim()) return;
 
     try {
-      await addComment(plantId, commentText); // API Call
-      
-      const newComment = {
-        id: Date.now().toString(),
-        username: "You",
-        text: commentText,
-        image: "https://via.placeholder.com/150",
-      };
-
-      setComments([...comments, newComment]);
+      setSubmitting(true);
+      await addComment(id, commentText.trim());
       setCommentText("");
-    } catch (err) {
-      console.error("Error commenting:", err);
+      inputRef.current?.blur();
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="white" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>POST</Text>
-        <TouchableOpacity>
-          <Ionicons name="ellipsis-horizontal" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
+  const formatTime = (timestamp) => {
+    const now = new Date();
+    const postTime = new Date(timestamp);
+    const diffMs = now - postTime;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
 
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "height"} 
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
+  };
+
+  if (loading || !currentPost) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
+      <KeyboardAvoidingView
         style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>POST</Text>
+          <TouchableOpacity>
+            <Ionicons name="ellipsis-horizontal" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* User Info */}
-          <View style={styles.userInfo}>
-            <View style={styles.userRow}>
-              <Image source={{ uri: "https://via.placeholder.com/150" }} style={styles.userAvatar} />
-              <Text style={styles.usernameText}>Sara_green</Text>
-            </View>
-            <Text style={styles.timeText}>7 hours ago</Text>
-          </View>
-
-          {/* Main Image */}
-          <View style={styles.imageContainer}>
+          <View style={styles.userSection}>
             <Image
-              source={{ uri: imageUri || "https://via.placeholder.com/400" }}
-              style={styles.postImage}
-              resizeMode="cover"
+              source={{
+                uri:
+                  currentPost.user.avatar_url ||
+                  "https://via.placeholder.com/50",
+              }}
+              style={styles.avatar}
             />
+            <View style={styles.userInfo}>
+              <Text style={styles.username}>{currentPost.user.username}</Text>
+              <Text style={styles.timestamp}>
+                {formatTime(currentPost.created_at)}
+              </Text>
+            </View>
           </View>
 
-          {/* Interaction Bar */}
-          <View style={styles.interactionBar}>
-            <View style={styles.leftIcons}>
-              <TouchableOpacity onPress={handleToggleLike}>
+          {/* Post Image */}
+          <Image
+            source={{ uri: currentPost.image_url }}
+            style={styles.postImage}
+            resizeMode="cover"
+          />
+
+          {/* Actions */}
+          <View style={styles.actions}>
+            <View style={styles.leftActions}>
+              <TouchableOpacity
+                onPress={() => toggleLike(currentPost.id)}
+                style={styles.actionButton}
+              >
                 <Ionicons
-                  name={isLiked ? "heart" : "heart-outline"}
+                  name={currentPost.is_liked ? "heart" : "heart-outline"}
                   size={28}
-                  color={isLiked ? "#FF4444" : "white"}
+                  color={currentPost.is_liked ? "#FF4444" : "#4CAF50"}
                 />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.iconSpacing}>
-                <Ionicons name="chatbubble-outline" size={26} color="white" />
+              <TouchableOpacity style={styles.actionButton}>
+                <Ionicons name="chatbubble-outline" size={26} color="#4CAF50" />
               </TouchableOpacity>
             </View>
-            <TouchableOpacity>
-              <Ionicons name="bookmark-outline" size={26} color="white" />
+            <TouchableOpacity onPress={() => toggleSave(currentPost.id)}>
+              <Ionicons
+                name={currentPost.is_saved ? "bookmark" : "bookmark-outline"}
+                size={26}
+                color="#4CAF50"
+              />
             </TouchableOpacity>
           </View>
 
-          {/* Caption */}
-          <View style={styles.detailsContainer}>
-            <Text style={styles.likesText}>Liked by {likesCount} others</Text>
-            <Text style={styles.captionText}>
-              My plant bringing beauty into my space. 🌿
-            </Text>
-            <Text style={styles.hashtag}>#plantlove #greenery</Text>
-            <Text style={styles.commentCount}>Comments ({comments.length})</Text>
-          </View>
+          {/* Likes Count */}
+          <Text style={styles.likesCount}>
+            Liked by {currentPost.likes_count}{" "}
+            {currentPost.likes_count === 1 ? "other" : "others"}
+          </Text>
 
-          {/* Comments List */}
+          {/* Caption */}
+          {currentPost.caption && (
+            <View style={styles.captionSection}>
+              <Text style={styles.caption}>{currentPost.caption}</Text>
+            </View>
+          )}
+
+          {/* Hashtags */}
+          {currentPost.hashtags && currentPost.hashtags.length > 0 && (
+            <Text style={styles.hashtags}>
+              {currentPost.hashtags.map((tag) => `#${tag}`).join(" ")}
+            </Text>
+          )}
+
+          {/* Comments */}
           <View style={styles.commentsSection}>
-            {comments.map((item) => (
-              <View key={item.id} style={styles.commentItem}>
-                <Image source={{ uri: item.image }} style={styles.commentAvatar} />
-                <View style={styles.commentTextContainer}>
-                  <Text style={styles.commentUser}>{item.username}</Text>
-                  <Text style={styles.commentContent}>{item.text}</Text>
+            <Text style={styles.commentsTitle}>
+              Comments ({currentPost.comments_count})
+            </Text>
+
+            {comments.map((comment) => (
+              <View key={comment.id} style={styles.commentItem}>
+                <Image
+                  source={{
+                    uri:
+                      comment.user.avatar_url ||
+                      "https://via.placeholder.com/36",
+                  }}
+                  style={styles.commentAvatar}
+                />
+                <View style={styles.commentContent}>
+                  <View style={styles.commentHeader}>
+                    <Text style={styles.commentUsername}>
+                      {comment.user.username}
+                    </Text>
+                    <Text style={styles.commentTime}>
+                      {formatTime(comment.created_at)}
+                    </Text>
+                  </View>
+                  <Text style={styles.commentText}>{comment.content}</Text>
                 </View>
               </View>
             ))}
           </View>
         </ScrollView>
 
-        {/* Floating Input Bar */}
-        <View style={styles.inputContainer}>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              placeholder="Add a comment..."
-              placeholderTextColor="#888"
-              style={styles.textInput}
-              value={commentText}
-              onChangeText={setCommentText}
-            />
-            <TouchableOpacity onPress={handleAddComment}>
-              <Text style={[styles.postBtnText, commentText.length > 0 && { color: "#4ADE80" }]}>
-                Post
-              </Text>
-            </TouchableOpacity>
-          </View>
+        {/* Comment Input */}
+        <View style={styles.commentInputContainer}>
+          <TextInput
+            ref={inputRef}
+            style={styles.commentInput}
+            placeholder="Add a comment..."
+            placeholderTextColor="#888"
+            value={commentText}
+            onChangeText={setCommentText}
+            multiline
+            maxLength={500}
+          />
+          <TouchableOpacity
+            onPress={handleAddComment}
+            disabled={!commentText.trim() || submitting}
+            style={[
+              styles.sendButton,
+              (!commentText.trim() || submitting) && styles.sendButtonDisabled,
+            ]}
+          >
+            {submitting ? (
+              <ActivityIndicator size="small" color="#4CAF50" />
+            ) : (
+              <Text style={styles.sendButtonText}>Post</Text>
+            )}
+          </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -170,47 +230,176 @@ const PostDetailScreen = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#071507" },
+  container: {
+    flex: 1,
+    backgroundColor: "#0A0A0A",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#0A0A0A",
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 15,
-    height: 60,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#1A1A1A",
   },
-  headerTitle: { color: "white", fontSize: 16, fontWeight: "bold", letterSpacing: 1 },
-  userInfo: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 15 },
-  userRow: { flexDirection: "row", alignItems: "center" },
-  userAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#1B3B1B" },
-  usernameText: { color: "white", marginLeft: 12, fontSize: 15, fontWeight: "600" },
-  timeText: { color: "#4ADE80", fontSize: 11 },
-  imageContainer: { paddingHorizontal: 10 },
-  postImage: { width: "100%", height: 400, borderRadius: 20 },
-  interactionBar: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 15 },
-  leftIcons: { flexDirection: "row", alignItems: "center" },
-  iconSpacing: { marginLeft: 15 },
-  detailsContainer: { paddingHorizontal: 20 },
-  likesText: { color: "white", fontWeight: "bold", fontSize: 14 },
-  captionText: { color: "#E0E0E0", marginTop: 8, fontSize: 14, lineHeight: 20 },
-  hashtag: { color: "#4ADE80", marginTop: 4, fontWeight: "600" },
-  commentCount: { color: "#888", marginTop: 15, fontSize: 13, fontWeight: "500" },
-  commentsSection: { paddingHorizontal: 20, marginTop: 15, paddingBottom: 100 },
-  commentItem: { flexDirection: "row", marginBottom: 15 },
-  commentAvatar: { width: 35, height: 35, borderRadius: 17.5, backgroundColor: "#1B3B1B" },
-  commentTextContainer: { marginLeft: 12, flex: 1 },
-  commentUser: { color: "white", fontWeight: "bold", fontSize: 13 },
-  commentContent: { color: "#BBB", fontSize: 13, marginTop: 2 },
-  inputContainer: { padding: 15, backgroundColor: "#071507", borderTopWidth: 0.5, borderTopColor: "#1B3B1B" },
-  inputWrapper: {
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+  },
+  userSection: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#112211",
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    height: 50,
+    padding: 16,
   },
-  textInput: { flex: 1, color: "white", fontSize: 14 },
-  postBtnText: { color: "#444", fontWeight: "bold", marginLeft: 10 },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: "#4CAF50",
+    marginRight: 12,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  username: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+  },
+  timestamp: {
+    fontSize: 12,
+    color: "#4CAF50",
+    marginTop: 2,
+  },
+  postImage: {
+    width: "100%",
+    height: 400,
+    backgroundColor: "#1A1A1A",
+  },
+  actions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  leftActions: {
+    flexDirection: "row",
+  },
+  actionButton: {
+    marginRight: 16,
+  },
+  likesCount: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+    paddingHorizontal: 16,
+    marginTop: 8,
+  },
+  captionSection: {
+    paddingHorizontal: 16,
+    marginTop: 12,
+  },
+  caption: {
+    color: "#E0E0E0",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  hashtags: {
+    color: "#4CAF50",
+    fontSize: 14,
+    paddingHorizontal: 16,
+    marginTop: 8,
+  },
+  commentsSection: {
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 100,
+  },
+  commentsTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+    marginBottom: 16,
+  },
+  commentItem: {
+    flexDirection: "row",
+    marginBottom: 16,
+  },
+  commentAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: "#4CAF50",
+    marginRight: 10,
+  },
+  commentContent: {
+    flex: 1,
+  },
+  commentHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  commentUsername: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#fff",
+    marginRight: 8,
+  },
+  commentTime: {
+    fontSize: 12,
+    color: "#888",
+  },
+  commentText: {
+    fontSize: 14,
+    color: "#E0E0E0",
+    lineHeight: 18,
+  },
+  commentInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#1A1A1A",
+    backgroundColor: "#0A0A0A",
+  },
+  commentInput: {
+    flex: 1,
+    backgroundColor: "#1A1A1A",
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    color: "#fff",
+    fontSize: 14,
+    maxHeight: 100,
+    marginRight: 12,
+  },
+  sendButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: "#4CAF50",
+  },
+  sendButtonDisabled: {
+    opacity: 0.5,
+  },
+  sendButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
 });
 
 export default PostDetailScreen;

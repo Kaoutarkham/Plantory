@@ -1,15 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const plantController = require("../controllers/plant.controller");
-const auth = require("../middlewares/auth");
-const upload = require("../middlewares/multer");
+const { authenticateToken } = require("../middlewares/authMiddleware");
 
-router.post("/add", auth, upload.single("image"), plantController.addPlant);
-router.get("/my-plants", auth, plantController.getUserPlants);
+// All routes require authentication
+router.use(authenticateToken);
 
-router.post("/like", auth, plantController.addLike);
-
-
-router.post("/comment", auth, plantController.addComment);
+// Plant CRUD
+router.post("/", plantController.createPlant);
+router.get("/", plantController.getUserPlants);
 
 module.exports = router;

@@ -45,16 +45,7 @@ export default function OnboardingScreen({ navigation }) {
             <Text style={styles.continueText}>Continue</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.skipButton}
-            onPress={() => {
-              // Usually skip goes straight to the Main/Home app
-              console.log("Skip Pressed");
-              // navigation.replace("MainTabs");
-            }}
-          >
-            <Text style={styles.skipText}>Skip</Text>
-          </TouchableOpacity>
+         
         </View>
       </View>
     </View>

@@ -48,16 +48,11 @@ export default function RegisterScreen({ navigation }) {
   };
 
   const handleRegister = async () => {
-    // --- STEP 1: BYPASS VALIDATION FOR TESTING ---
-    /* if (!fullName || !email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
-      return;
-    }
-    */
+
 
     setLoading(true);
     try {
-      // 1. Attempt API call
+      
       const response = await api.post("/users/register", {
         fullName,
         email,
@@ -67,22 +62,16 @@ export default function RegisterScreen({ navigation }) {
         profileImage: image,
       });
 
-      // 2. SUCCESS: Go directly to MainApp (Tabs)
-      // navigation.replace clears the stack so you can't go back to Register
+      
       navigation.replace("MainApp"); 
 
     } catch (error) {
       console.log("Registration Error:", error.message);
       
-      // --- STEP 2: BYPASS ERROR FOR DESIGN TESTING ---
-      // If backend is off, we still go to the Profile screen
+      
       navigation.replace("MainApp");
 
-      /* Alert.alert(
-        "Error",
-        error.response?.data?.message || "Registration failed",
-      ); 
-      */
+      
     } finally {
       setLoading(false);
     }

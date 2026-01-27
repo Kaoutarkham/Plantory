@@ -1,26 +1,68 @@
 const { sequelize } = require("../config/database");
 const { DataTypes } = require("sequelize");
 
-const User = require("./user.model"); 
-const PlantFactory = require("./plant.model");
-const Like = require("./like"); 
-const Comment = require("./comment"); 
+// Create empty db object
+const db = {};
 
-const Plant = PlantFactory(sequelize, DataTypes);
+// Add sequelize instances
+db.sequelize = sequelize;
+db.Sequelize = require("sequelize");
 
-User.hasMany(Plant, { foreignKey: "userId", as: "plants" });
-Plant.belongsTo(User, { foreignKey: "userId", as: "owner" });
+// Initialize models - DO NOT import factories at top
+db.User = require("./user.model")(sequelize, DataTypes);
+db.Plant = require("./plant.model")(sequelize, DataTypes);
+db.Like = require("./like")(sequelize, DataTypes);
+db.Comment = require("./comment")(sequelize, DataTypes);
+db.Post = require("./post")(sequelize, DataTypes);
+db.SavedPost = require("./savedPost")(sequelize, DataTypes);
 
-User.hasMany(Like, { foreignKey: "userId", as: "likes" });
-Like.belongsTo(User, { foreignKey: "userId" });
+// Setup associations in a function that runs later
+const setupAssociations = () => {
+  const { User, Plant, Like, Comment, Post, SavedPost } = db;
 
-Plant.hasMany(Like, { foreignKey: "plantId", as: "plantLikes" });
-Like.belongsTo(Plant, { foreignKey: "plantId" });
+  // PLANTS associations
+  User.hasMany(Plant, { foreignKey: "userId", as: "plants" });
+  Plant.belongsTo(User, { foreignKey: "userId", as: "owner" });
 
-User.hasMany(Comment, { foreignKey: "userId", as: "comments" });
-Comment.belongsTo(User, { foreignKey: "userId" });
+  User.hasMany(Like, { foreignKey: "userId", as: "plantLikes" });
+  Like.belongsTo(User, { foreignKey: "userId", as: "user" });
 
-Plant.hasMany(Comment, { foreignKey: "plantId", as: "plantComments" });
-Comment.belongsTo(Plant, { foreignKey: "plantId" });
+  Plant.hasMany(Like, { foreignKey: "plantId", as: "likes" });
+  Like.belongsTo(Plant, { foreignKey: "plantId", as: "plant" });
 
-module.exports = { User, Plant, Like, Comment, sequelize };
+  User.hasMany(Comment, { foreignKey: "userId", as: "plantComments" });
+  Comment.belongsTo(User, { foreignKey: "userId", as: "commentUser" });
+
+  Plant.hasMany(Comment, { foreignKey: "plantId", as: "comments" });
+  Comment.belongsTo(Plant, { foreignKey: "plantId", as: "plant" });
+
+  // POSTS associations
+  User.hasMany(Post, { foreignKey: "user_id", as: "posts" });
+  Post.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
+  Post.hasMany(Like, { foreignKey: "post_id", as: "postLikes" });
+  Like.belongsTo(Post, { foreignKey: "post_id", as: "post" });
+
+  User.hasMany(SavedPost, { foreignKey: "user_id", as: "saved_posts" });
+  SavedPost.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
+  Post.hasMany(SavedPost, { foreignKey: "post_id", as: "saves" });
+  SavedPost.belongsTo(Post, { foreignKey: "post_id", as: "post" });
+
+  Post.hasMany(Comment, { foreignKey: "post_id", as: "postComments" });
+  Comment.belongsTo(Post, { foreignKey: "post_id", as: "commentPost" });
+};
+
+// Run associations immediately
+setupAssociations();
+
+// Export destructured models for easier importing
+module.exports = {
+  User: db.User,
+  Plant: db.Plant,
+  Like: db.Like,
+  Comment: db.Comment,
+  Post: db.Post,
+  SavedPost: db.SavedPost,
+  sequelize: db.sequelize,
+};

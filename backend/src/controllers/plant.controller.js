@@ -1,99 +1,145 @@
 const plantService = require("../services/plant.service");
-const path = require("path");
-const { Like, Comment, User } = require("../models/index");
 
-exports.addPlant = async (req, res) => {
-  try {
-    const { name } = req.body;
-    const imageFilename = req.file ? req.file.filename : null;
-
-    const newPlant = await plantService.createPlant({
-      name,
-      image: imageFilename,
-      userId: req.userId,
-    });
-
-    res.status(201).json({
-      message: "Plant added successfully!",
-      plant: newPlant,
-    });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error adding plant", error: error.message });
-  }
-};
-
-exports.getUserPlants = async (req, res) => {
-  try {
-    const plants = await plantService.findPlantsByUserId(req.userId);
-
-    const protocol = req.protocol;
-    const host = req.get("host");
-    const baseUrl = `${protocol}://${host}/uploads`;
-
-    const formattedPlants = await Promise.all(
-      plants.map(async (plant) => {
-        const p = plant.toJSON();
-
-        const likesCount = await Like.count({ where: { plantId: p.id } });
-        const commentsCount = await Comment.count({ where: { plantId: p.id } });
-
-        if (p.image) {
-          const filename = path.basename(p.image);
-          p.image = `${baseUrl}/${filename}`;
-        }
-
-        return {
-          ...p,
-          likesCount,
-          commentsCount,
-        };
-      }),
-    );
-
-    res.status(200).json(formattedPlants);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching plants", error: error.message });
-  }
-};
-
-exports.addLike = async (req, res) => {
-  try {
-    const { plantId } = req.body;
-    const userId = req.userId;
-
-    const existingLike = await Like.findOne({ where: { userId, plantId } });
-    if (existingLike) {
-      return res.status(200).json({ message: "Already liked" });
+class PlantController {
+  async createPlant(req, res) {
+    try {
+      const plant = await plantService.createPlant({
+        ...req.body,
+        userId: req.user.id,
+      });
+      res.status(201).json({
+        success: true,
+        data: plant,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
     }
-
-    await Like.create({ userId, plantId });
-    res.status(201).json({ message: "Like added!" });
-  } catch (error) {
-    res.status(500).json({ message: "Error liking", error: error.message });
   }
-};
 
-exports.addComment = async (req, res) => {
-  try {
-    const { plantId, content } = req.body;
-    const userId = req.userId;
-
-    if (!content) {
-      return res.status(400).json({ message: "Comment content is required" });
+  async getUserPlants(req, res) {
+    try {
+      const plants = await plantService.findPlantsByUserId(req.user.id);
+      res.json({
+        success: true,
+        data: plants,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
     }
-
-    const newComment = await Comment.create({
-      content,
-      userId,
-      plantId,
-    });
-
-    res.status(201).json({ message: "Comment added!", comment: newComment });
-  } catch (error) {
-    res.status(500).json({ message: "Error commenting", error: error.message });
   }
-};
+
+  async getPlantById(req, res) {
+    try {
+      const { id } = req.params;
+      const plant = await plantService.findPlantById(id);
+
+      if (!plant) {
+        return res.status(404).json({
+          success: false,
+          message: "Plant not found",
+        });
+      }
+
+      res.json({
+        success: true,
+        data: plant,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  async updatePlant(req, res) {
+    try {
+      const { id } = req.params;
+      const plant = await plantService.updatePlant(id, req.body);
+
+      if (!plant) {
+        return res.status(404).json({
+          success: false,
+          message: "Plant not found",
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Plant updated successfully",
+        data: plant,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  async deletePlant(req, res) {
+    try {
+      const { id } = req.params;
+      const deleted = await plantService.deletePlant(id);
+
+      if (!deleted) {
+        return res.status(404).json({
+          success: false,
+          message: "Plant not found",
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Plant deleted successfully",
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  async likePlant(req, res) {
+    try {
+      const { Like } = require("../models/index");
+      const { id } = req.params;
+      const userId = req.user.id;
+
+      const existingLike = await Like.findOne({
+        where: { userId, plantId: id },
+      });
+
+      if (existingLike) {
+        await existingLike.destroy();
+        res.json({
+          success: true,
+          message: "Plant unliked",
+          data: { is_liked: false },
+        });
+      } else {
+        await Like.create({ userId, plantId: id });
+        res.json({
+          success: true,
+          message: "Plant liked",
+          data: { is_liked: true },
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+}
+
+// ✅ CRITICAL: Export with 'new'
+module.exports = new PlantController();

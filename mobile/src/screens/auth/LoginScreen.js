@@ -28,7 +28,6 @@ export default function LoginScreen({ navigation }) {
 
     setLoading(true);
     try {
-      // 1. Send Login Request
       const response = await api.post("/users/login", {
         email: email.trim(),
         password: password,
@@ -36,11 +35,9 @@ export default function LoginScreen({ navigation }) {
 
       const { token, userId } = response.data;
 
-      // 2. Save Session Data to phone storage
       await AsyncStorage.setItem("userToken", token);
       await AsyncStorage.setItem("userId", userId.toString());
 
-      // 3. Success! Move to Profile
       navigation.replace("Profile");
     } catch (e) {
       const msg = e.response?.data?.message || "Connection error";

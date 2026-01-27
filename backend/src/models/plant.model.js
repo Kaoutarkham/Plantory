@@ -2,17 +2,43 @@ module.exports = (sequelize, DataTypes) => {
   const Plant = sequelize.define(
     "Plant",
     {
-      name: { type: DataTypes.STRING, allowNull: false },
-      image: { type: DataTypes.STRING, allowNull: true },
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
       userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: "Users", key: "id" },
+        field: "userId",
+      },
+      name: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+      },
+      species: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      image_url: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+      },
+      care_instructions: {
+        type: DataTypes.TEXT,
+        allowNull: true,
       },
     },
     {
-      tableName: "Plants",
+      tableName: "plants",
       timestamps: true,
+      underscored: true,
+      createdAt: "created_at",
+      updatedAt: "updated_at",
     },
   );
 

@@ -1,27 +1,30 @@
-const User = require("../models/user.model");
-const bcrypt = require("bcryptjs");
+// ❌ DELETE THIS LINE:
+// const User = require("../models/user.model");
 
-const createUser = async (userData) => {
-  // Hash du mot de passe (Sécurité pour le jury)
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(userData.password, salt);
+// ✅ Use getter pattern
+class UserService {
+  get User() {
+    return require("../models/index").User;
+  }
 
-  // Utilisation des noms exacts de ton pgAdmin
-  return await User.create({
-    fullName: userData.fullName,
-    email: userData.email,
-    password: hashedPassword,
-    gender: userData.gender,
-    birthday: userData.birthday, 
-    profileImage: userData.profileImage, 
-  });
-};
+  async createUser(userData) {
+    return await this.User.create(userData);
+  }
 
-const findUserByEmail = async (email) => {
-  return await User.findOne({ where: { email } });
-};
+  async findUserByEmail(email) {
+    return await this.User.findOne({ where: { email } });
+  }
 
-module.exports = {
-  createUser,
-  findUserByEmail,
-};
+  async findUserById(id) {
+    return await this.User.findByPk(id, {
+      attributes: { exclude: ["password"] },
+    });
+  }
+
+  async updateUser(id, updates) {
+    await this.User.update(updates, { where: { id } });
+    return await this.findUserById(id);
+  }
+}
+
+module.exports = new UserService();

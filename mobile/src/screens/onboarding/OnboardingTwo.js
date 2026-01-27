@@ -58,12 +58,10 @@ export default function OnboardingTwo({ navigation }) {
           </Text>
         </View>
 
-        {/* 2. THE NAVIGATION CODE GOES HERE */}
         <TouchableOpacity
           style={styles.getStartedButton}
           onPress={() => {
             console.log("Navigating to OnboardingThree");
-            // Using replace prevents the user from going back to onboarding
             navigation.replace("OnboardingThree");
           }}
         >
